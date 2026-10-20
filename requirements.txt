@@ -4,3 +4,4 @@ pdfplumber
 openpyxl
 reportlab
 scikit-learn
+requests
