@@ -4,7 +4,7 @@ Upload a bank statement (CSV, Excel or PDF). Paisapilot sorts every transaction 
 double charges and unusually large payments, forecasts next month's spending, and answers questions about your money in
 plain English, with every number checked against your statement.
 
-**Live demo:** YOUR-APP-URL (uses a fictional sample statement; please do not upload your real statement to a public demo)
+**Live demo:** https://paisapilot-sf9adlgc2td2mixqe7vnnh.streamlit.app/
 
 ![Overview](docs/overview.png)
 
