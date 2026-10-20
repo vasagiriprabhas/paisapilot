@@ -68,6 +68,15 @@ check("statement ending on day 10: last month left out", late.months_used == 7 a
 start_late = F.forecast(make(8, lambda i: 5000, first_day=20))
 check("statement starting on day 20: first month left out", start_late.months_used == 7)
 
+# a month with no spending at all (found by the Day 7 end-to-end test): no crash, no warnings
+import warnings
+gap_rows = make(8, lambda i: 5000)
+gap_rows = gap_rows[~((gap_rows["date"].dt.month == 4) & (gap_rows["amount"] < 0))]     # April: salary only
+with warnings.catch_warnings():
+    warnings.simplefilter("error")
+    gap = F.forecast(gap_rows)
+check("a month with no spending does not break the backtest", gap.total > 0)
+
 # empty and no-spending
 check("empty input does not crash", F.forecast(df.head(0)).total == 0)
 check("income-only statement does not crash", F.forecast(df[df["amount"] > 0]).total == 0)

@@ -110,10 +110,14 @@ def forecast(df: pd.DataFrame) -> Forecast:
             rows = []
             for t in range(MIN_BACKTEST_HISTORY, len(table)):
                 pred = float(_predict(table, t, fn).sum())
-                rows.append({"month": str(table.index[t]), "actual": float(actual.iloc[t]), "predicted": pred})
-            bt = pd.DataFrame(rows)
+                if actual.iloc[t] > 0:                       # an empty month has no percentage error to measure
+                    rows.append({"month": str(table.index[t]), "actual": float(actual.iloc[t]), "predicted": pred})
+            bt = pd.DataFrame(rows, columns=["month", "actual", "predicted"])
             bt["error_pct"] = (bt["predicted"] - bt["actual"]) / bt["actual"] * 100
             results[name] = bt
+        if any(len(b) == 0 for b in results.values()):
+            results = {}
+    if results:
         best = min(results, key=lambda n: results[n]["error_pct"].abs().mean())
         out.method, out.backtest = best, results[best]
         out.typical_error_pct = float(results[best]["error_pct"].abs().mean())

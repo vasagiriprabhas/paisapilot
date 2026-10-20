@@ -143,7 +143,7 @@ check("built-in: highest-month answer uses real numbers",
 
 # ---- privacy: what actually leaves the computer ----------------------------------------------------------
 spy = FakeLLM(["Subscriptions cost Rs 1,326 a month."])
-ask.ask_money("who did I send money to, and what about rent?", df, llm=spy)
+ask.ask_money("who did I send money to, where did my money go, and what about rent?", df, llm=spy)
 sent = spy.prompts[0]
 check("privacy: no personal names are sent", not any(p in sent for p in gs.PEOPLE) and "LANDLORD SURESH" not in sent
       and "TECHNOVA" not in sent)

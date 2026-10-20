@@ -273,7 +273,7 @@ with tab_ask:
             st.caption("AI wording. Every number was checked against your statement.")
         else:
             st.caption("Built-in answer (numbers come straight from your statement).")
-        st.write(answer.text)
+        st.write(answer.text.replace("\n", "  \n"))          # keep line breaks (one subscription per line)
         if answer.note:
             st.caption(f"Note: {answer.note}")
         if answer.source == "ai":

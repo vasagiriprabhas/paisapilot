@@ -90,10 +90,12 @@ def generate(months: int = 12, seed: int = 7, salary: int = 60000, start: date =
             add(day(rng.randint(1, days)), f"UPI/CR/{rng.randint(10**11, 10**12 - 1)}/{person}/ybl/{person.split()[0].lower()}@ybl/Payment", credit=rng.choice([300, 500, 1000]), category="Transfers")
 
     # Two planted problems for the insights day to find:
-    dup_day = start + timedelta(days=120)
-    add(dup_day, _upi("AMAZON PAY INDIA", rng), debit=1799, category="Shopping")
-    add(dup_day, rows[-1][1], debit=1799, category="Shopping")                          # charged twice, same day
-    add(start + timedelta(days=200), _upi("APPLE STORE", rng), debit=64900, category="Shopping")   # one very large purchase
+    if months >= 5:
+        dup_day = start + timedelta(days=120)
+        add(dup_day, _upi("AMAZON PAY INDIA", rng), debit=1799, category="Shopping")
+        add(dup_day, rows[-1][1], debit=1799, category="Shopping")                      # charged twice, same day
+    if months >= 8:
+        add(start + timedelta(days=200), _upi("APPLE STORE", rng), debit=64900, category="Shopping")   # one very large purchase
 
     rows.sort(key=lambda r: r[0])
     balance, out, labels = 38000.0, [], []

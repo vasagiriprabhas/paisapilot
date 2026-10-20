@@ -2,7 +2,6 @@ pandas
 numpy
 pdfplumber
 openpyxl
-reportlab
 scikit-learn
 requests
 streamlit
