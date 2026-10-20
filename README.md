@@ -8,7 +8,7 @@ Your statement is read in memory and is never stored. Public demos use fictional
 - [x] Day 1: Statement reader (CSV, Excel, PDF), merchant cleaner, fictional sample data
 - [x] Day 2: Categoriser (rules + ML, accuracy measured on held-out data)
 - [x] Day 3: Insights (subscriptions, duplicates, anomalies with reasons)
-- [ ] Day 4: Spending forecast
+- [x] Day 4: Spending forecast
 - [ ] Day 5: "Ask your money" AI layer (code computes the numbers, AI only explains them)
 - [ ] Day 6: Streamlit app
 - [ ] Day 7: Testing, deployment, README with screenshots
@@ -22,6 +22,8 @@ python test_day2.py        # categoriser tests
 python day2.py             # accuracy report on the sample
 python test_day3.py        # insights tests
 python day3.py             # subscriptions, double charges, unusual payments
+python test_day4.py        # forecast tests
+python day4.py             # next month's spending + honest backtest
 python day1.py my_statement.csv     # your own file (CSV, Excel or PDF)
 ```
 
