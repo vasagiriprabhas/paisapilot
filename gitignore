@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+.env
+*.pdf
+!docs/*.pdf
+my_statement*
+real_*
+sample_statement.csv
+sample_labels.csv
