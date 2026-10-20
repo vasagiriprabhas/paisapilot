@@ -178,6 +178,10 @@ def build_facts(df: pd.DataFrame, question: str = "", hide_names: bool = False) 
 def _focus(df, spend, cat_month, summary, use, question) -> dict:
     """Extra detail for whatever the question is about."""
     month = parse_month(question, list(cat_month.index)) if question else ""
+    asked_highest = bool(re.search(r"\b(which|what)\s+month|highest\s+month|(most|more)\s+expensive\s+month|costliest\s+month|"
+                                  r"biggest\s+month|month\s+(did|do)\s+i\s+spend\s+(the\s+)?most", question.lower())) if question else False
+    if asked_highest and not month and use:
+        month = max(use, key=lambda m: summary.loc[m, "money_out"])
     cat = parse_category(question) if question else ""
     merchant = parse_merchant(question, spend) if question else ""
     focus = {}
@@ -189,6 +193,7 @@ def _focus(df, spend, cat_month, summary, use, question) -> dict:
         extra = (this - typical.reindex(this.index).fillna(0)).sort_values(ascending=False)
         typical_total = whole(summary.loc[others, "money_out"].mean()) if others else 0
         focus["month"] = {
+            "chosen_as_highest_spending_month": bool(asked_highest),
             "month": month, "money_out": whole(row["money_out"]), "money_in": whole(row["money_in"]),
             "typical_month_spending_other_months": typical_total,
             "more_than_typical_by": whole(row["money_out"] - typical_total),

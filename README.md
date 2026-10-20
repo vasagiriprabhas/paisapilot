@@ -10,7 +10,7 @@ Your statement is read in memory and is never stored. Public demos use fictional
 - [x] Day 3: Insights (subscriptions, duplicates, anomalies with reasons)
 - [x] Day 4: Spending forecast
 - [x] Day 5: "Ask your money" AI layer (code computes the numbers, AI only explains them)
-- [ ] Day 6: Streamlit app
+- [x] Day 6: Streamlit app
 - [ ] Day 7: Testing, deployment, README with screenshots
 
 ## Setup
@@ -27,6 +27,8 @@ python day4.py             # next month's spending + honest backtest
 python test_day5.py        # facts, answer checking, AI flow (pretend AI, no key needed)
 python day5.py --no-ai     # ask questions, built-in answers
 python day5.py             # same, with AI if GEMINI_API_KEY or GROQ_API_KEY is set
+python test_day6.py        # page logic + a walk through app.py
+streamlit run app.py       # the web app
 python day1.py my_statement.csv     # your own file (CSV, Excel or PDF)
 ```
 

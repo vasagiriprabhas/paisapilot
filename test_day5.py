@@ -122,6 +122,25 @@ check("ai: call budget is enforced", a.source == "rules" and "limit" in a.note)
 check("ai: ai=False never calls the AI", FakeLLM(["x"]).calls == 0 and ask.ask_money(q, df, ai=False, llm=FakeLLM(["x"])).source == "rules")
 check("ai: empty statement is handled", ask.ask_money(q, df.head(0), llm=FakeLLM([])).source == "rules")
 
+# ---- the AI only gets what it needs (free plans reject long messages) -------------------------------------
+for qq in ["which month i have lot of waste expenses", "What subscriptions do I pay?", "Why was April so high?",
+           "Was I charged twice?", "what will I spend next month", "compare each month", "hello", "how much on food in March?"]:
+    sent_facts = ask.compact(ask.facts_for_ai(Fa.build_facts(df, qq, hide_names=True), qq))
+    check(f"ai size: '{qq}' sends under {ask.AI_FACTS_LIMIT + 800} characters", len(sent_facts) <= ask.AI_FACTS_LIMIT + 800)
+check("ai size: a subscriptions question includes the subscriptions facts",
+      "subscriptions_cost" in ask.facts_for_ai(Fa.build_facts(df, "subscriptions", hide_names=True), "subscriptions"))
+check("ai size: a double-charge question includes double charges",
+      "possible_double_charges" in ask.facts_for_ai(Fa.build_facts(df, "charged twice", hide_names=True), "charged twice"))
+check("ai size: unrelated sections are left out", "forecast" not in ask.facts_for_ai(Fa.build_facts(df, "charged twice", hide_names=True), "charged twice"))
+
+# ---- the question that failed on your laptop -----------------------------------------------------------------
+a = ask.ask_money("which month i have lot of waste expenses", df, ai=False)
+check("built-in: 'waste' explains what it can and cannot say", "cannot tell what is wasteful" in a.text and "Shopping" in a.text)
+a = ask.ask_money("which month did I spend the most?", df, ai=False)
+check("built-in: 'which month' gives the highest month", "April 2026" in a.text and "Rs 106,695" in a.text)
+check("built-in: highest-month answer uses real numbers",
+      ask.unverified_numbers(a.text, Fa.build_facts(df, "which month did I spend the most?"), "") == [])
+
 # ---- privacy: what actually leaves the computer ----------------------------------------------------------
 spy = FakeLLM(["Subscriptions cost Rs 1,326 a month."])
 ask.ask_money("who did I send money to, and what about rent?", df, llm=spy)

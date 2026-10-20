@@ -62,7 +62,10 @@ _RULE_RES = [(cat, re.compile(r"(?<![A-Z0-9])(?:" + "|".join(re.escape(k) for k 
 # words that show a name belongs to a business, so it is NOT a person we sent money to
 BUSINESS_WORDS = {"LTD", "PVT", "LIMITED", "PRIVATE", "STORE", "STORES", "SHOP", "TRADERS", "TRADING", "ENTERPRISES",
                   "SERVICES", "MART", "FOODS", "AGENCY", "AGENCIES", "CENTRE", "CENTER", "COMPANY", "CO", "INDIA",
-                  "TECHNOLOGIES", "SOLUTIONS", "SYSTEMS", "MOTORS", "ELECTRONICS", "SUPPLIERS", "WORKS", "GARAGE"}
+                  "TECHNOLOGIES", "SOLUTIONS", "SYSTEMS", "MOTORS", "ELECTRONICS", "SUPPLIERS", "WORKS", "GARAGE",
+                  "VENTURES", "INDUSTRIES", "ASSOCIATES", "MARKETING", "DISTRIBUTORS", "BROTHERS", "BROS", "SONS",
+                  "CORPORATION", "CORP", "GROUP", "HOLDINGS", "LABS", "LAB", "FASHION", "TEXTILES", "JEWELLERS",
+                  "FURNITURE", "ENTERPRISE", "TRADERS", "PHARMA", "AUTOMOBILES", "CONSULTANCY", "CONSULTING", "INFOTECH"}
 
 # well-known merchants the keyword rules do NOT cover on purpose: they give the model something to learn from
 SEED = {

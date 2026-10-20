@@ -52,6 +52,50 @@ class AiBudget:
 
 
 # ---------------------------------------------------------------------------------------------------------------
+# Sending the AI only what the question needs (free API plans reject long messages)
+# ---------------------------------------------------------------------------------------------------------------
+AI_FACTS_LIMIT = 3500                      # characters of facts sent to the AI
+TOPICS = [                                 # (facts section, words in the question that make it relevant)
+    ("repeating_payments", r"subscri|recurring|regular|repeat|netflix|spotify|prime|bill|emi|rent|stopped|cancel|price"),
+    ("subscriptions_cost", r"subscri|recurring|regular|repeat|netflix|spotify|prime|ott|streaming|cancel"),
+    ("possible_double_charges", r"twice|double|duplicate|charged|refund|mistake|wrong"),
+    ("unusual_payments", r"unusual|large|big|expens|strange|suspicious|spike|waste|why|high|anomal"),
+    ("largest_payments", r"biggest|largest|highest|big|expens|waste|single|why|high"),
+    ("forecast", r"next|forecast|predict|expect|future|will i|going to|budget|afford"),
+    ("top_merchants", r"where|top|most|which|merchant|shop|waste|spend"),
+    ("average_month_by_category", r"typical|average|usual|normal|category|categories|waste|breakdown|where|most|compare"),
+    ("spending_by_category_and_month", r"compare|each month|every month|by month|trend|over time|month by month"),
+]
+
+
+def facts_for_ai(facts: dict, question: str) -> dict:
+    """The sections of the facts this question needs. Always: overview, months, and the focus on whatever was mentioned."""
+    q = question.lower()
+    out = {"overview": facts["overview"],
+           "months": [{k: m[k] for k in ("month", "money_in", "money_out", "saved")} for m in facts["months"]]}
+    if facts.get("focus"):
+        out["focus"] = facts["focus"]
+    chosen = [name for name, pattern in TOPICS if name in facts and re.search(pattern, q)]
+    if not chosen and not facts.get("focus"):
+        chosen = ["average_month_by_category", "top_merchants", "largest_payments"]
+    for name in chosen:
+        out[name] = facts[name]
+    # still too long? drop the bulkiest optional parts first
+    for name in ("spending_by_category_and_month", "repeating_payments", "top_merchants", "average_month_by_category"):
+        if len(compact(out)) <= AI_FACTS_LIMIT:
+            break
+        if name == "repeating_payments" and name in out:
+            out[name] = out[name][:6]
+        else:
+            out.pop(name, None)
+    return out
+
+
+def compact(obj) -> str:
+    return __import__("json").dumps(obj, ensure_ascii=False, separators=(",", ":"))
+
+
+# ---------------------------------------------------------------------------------------------------------------
 # Checking the AI's numbers
 # ---------------------------------------------------------------------------------------------------------------
 _MONEY = re.compile(r"(?:Rs\.?|INR|₹)\s*(\d[\d,]*(?:\.\d+)?)(?:\s*(k|thousand|lakhs?|lacs?|crores?|cr|m|million)\b)?", re.IGNORECASE)
@@ -121,6 +165,27 @@ def rule_answer(question: str, f: dict) -> str:
     q, focus, ov = question.lower(), f["focus"], f["overview"]
     month, cat, mer = focus.get("month"), focus.get("category"), focus.get("merchant")
 
+    if _has(q, "waste", "wasteful", "unnecessary", "overspend", "overspending", "cut down", "reduce spending"):
+        avg = f["average_month_by_category"]
+        wants = [(c, avg[c]) for c in ("Shopping", "Food", "Entertainment", "Subscriptions", "Travel") if c in avg]
+        text = ("I cannot tell what is wasteful for you, because that depends on your choices. What I can show is where the "
+                "flexible money goes in a typical month: " + ", ".join(f"{c} {rs(v)}" for c, v in wants) + ".")
+        if month and month.get("chosen_as_highest_spending_month"):
+            text += f" Your highest-spending month was {label(month['month'])} ({rs(month['money_out'])} out)."
+        if f["unusual_payments"]:
+            u = f["unusual_payments"][0]
+            text += f" One payment stands out: {u['merchant']} {rs(u['amount'])} on {u['date']}, far above your usual {u['category']} payment."
+        return text
+    if month and month.get("chosen_as_highest_spending_month"):
+        up = month["biggest_increases_vs_typical"]
+        text = (f"Your highest-spending month was {label(month['month'])}: {rs(month['money_out'])} went out, against a typical "
+                f"{rs(month['typical_month_spending_other_months'])}.")
+        if up:
+            text += f" The biggest reason was {up[0]['category']} ({rs(up[0]['this_month'])} against a typical {rs(up[0]['typical'])})."
+        if month["biggest_payments"]:
+            b = month["biggest_payments"][0]
+            text += f" Its largest payment was {rs(b['amount'])} to {b['merchant']} on {b['date']}."
+        return text
     if _has(q, "duplicate", "double", "twice", "charged two"):
         items = f["possible_double_charges"]
         if not items:
@@ -194,7 +259,6 @@ def rule_answer(question: str, f: dict) -> str:
 # The full flow
 # ---------------------------------------------------------------------------------------------------------------
 def ask_money(question: str, df, ai: bool = True, llm=None, budget: AiBudget = None) -> Answer:
-    import json
     llm = llm or __import__("llm")
     if df is None or len(df) == 0:
         return Answer("There are no transactions to answer from.", "rules")
@@ -208,7 +272,7 @@ def ask_money(question: str, df, ai: bool = True, llm=None, budget: AiBudget = N
         return base
 
     shared = Fa.build_facts(df, question, hide_names=True)
-    prompt = f"QUESTION: {question}\n\nFACTS (JSON):\n{json.dumps(shared, ensure_ascii=False)}"
+    prompt = f"QUESTION: {question}\n\nFACTS (JSON):\n{compact(facts_for_ai(shared, question))}"
     bad = []
     for attempt in range(2):
         if budget is not None and not budget.take():
