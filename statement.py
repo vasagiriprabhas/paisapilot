@@ -242,8 +242,8 @@ def parse_statement(data: bytes, filename: str = "") -> Statement:
     balance = raw["balance"].map(lambda v: parse_number(v)[0])
     amounts, warnings = pd.Series(np.nan, index=raw.index), []
     if "debit" in cols or "credit" in cols:
-        out = raw["debit"].map(lambda v: parse_number(v)[0]).fillna(0).abs()
-        inc = raw["credit"].map(lambda v: parse_number(v)[0]).fillna(0).abs()
+        out = pd.to_numeric(raw["debit"].map(lambda v: parse_number(v)[0]), errors="coerce").astype(float).fillna(0).abs()
+        inc = pd.to_numeric(raw["credit"].map(lambda v: parse_number(v)[0]), errors="coerce").astype(float).fillna(0).abs()
         amounts = inc - out
         if "amount" in cols and not (out.any() or inc.any()):
             amounts = pd.Series(np.nan, index=raw.index)

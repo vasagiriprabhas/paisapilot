@@ -3,3 +3,4 @@ numpy
 pdfplumber
 openpyxl
 reportlab
+scikit-learn

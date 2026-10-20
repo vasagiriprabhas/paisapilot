@@ -6,7 +6,7 @@ Your statement is read in memory and is never stored. Public demos use fictional
 
 ## Progress
 - [x] Day 1: Statement reader (CSV, Excel, PDF), merchant cleaner, fictional sample data
-- [ ] Day 2: Categoriser (rules + ML, accuracy measured on held-out data)
+- [x] Day 2: Categoriser (rules + ML, accuracy measured on held-out data)
 - [ ] Day 3: Insights (subscriptions, duplicates, anomalies with reasons)
 - [ ] Day 4: Spending forecast
 - [ ] Day 5: "Ask your money" AI layer (code computes the numbers, AI only explains them)
@@ -18,6 +18,8 @@ Your statement is read in memory and is never stored. Public demos use fictional
 pip install -r requirements.txt
 python test_day1.py        # every line should say ok
 python day1.py sample      # make and read a fictional statement
+python test_day2.py        # categoriser tests
+python day2.py             # accuracy report on the sample
 python day1.py my_statement.csv     # your own file (CSV, Excel or PDF)
 ```
 
